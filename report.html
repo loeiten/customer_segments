@@ -15195,7 +15195,7 @@ RETURoYHIyKiNpK0IiKiNpK0IiKiNpK0IiKiNpK0IiKiNv4/uXXn1GD9u1EAAAAASUVORK5CYII=
 <p><strong>Answer:</strong></p>
 <ul>
 <li>Distribution of the dataset:<ul>
-<li>Normality: The distribution of the dataset can be seen in the diagonal of the scatter matrix. A normal distribution would be one which is bell shaped. We can clearly see that none of them are. All of them are concentrated towards low numbers (i.e. it is more likely that a random selected customer buys for a small amount of monetary units than a large one). Specifically the distributions looks like a F or lognormal distribution (see <a href="http://www.itl.nist.gov/div898/handbook/eda/section3/eda366.htm">http://www.itl.nist.gov/div898/handbook/eda/section3/eda366.htm</a> for visual gallery). Fits could be done to see if the distribution matches one or the other better.</li>
+<li>Normality: The distribution of the dataset can be seen in the diagonal of the scatter matrix. A normal distribution would be one which is bell shaped. We can clearly see that none of them are. All of them are concentrated towards low numbers (that is they have a large postive skewness), i.e. it is more likely that a random selected customer buys for a small amount of monetary units than a large one. Specifically the distributions looks like a F or lognormal distribution (see <a href="http://www.itl.nist.gov/div898/handbook/eda/section3/eda366.htm">http://www.itl.nist.gov/div898/handbook/eda/section3/eda366.htm</a> for visual gallery). Fits could be done to see if the distribution matches one or the other better.</li>
 <li>Outliers: Outliers (her meant points being far away from the bulk of points) can be found in most of the plots, but in particular noticable within the <code>Milk</code> feature (see for example <code>Milk</code>-<code>Grocery</code> and <code>Milk</code>-<code>Detergents_Paper</code>.</li>
 <li>Large number of data points near $0$: We can see that <code>Frozen</code> and <code>Delicatessen</code> particularily clumps near $0$. This indicates that it is not common to buy large quantities of these products. </li>
 </ul>
@@ -20371,7 +20371,7 @@ Name: 154, dtype: int64</pre>
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>We can see from above that the customer has low values in the three feautres. We note that neither of them are minimum (which we can see from above equals $3$).</p>
 <p>Now, it could be that this is an actual data point (which means that it strictly belongs to the data set), but it is also a chance that numbers have been mistyped or something similar.</p>
-<p>In either case, this customer is clearly not a respresentative sample of the dataset, and I therefore choose the remove this point as its values may cludder up the process. We can use the same argument for removing the data points which are extreme for more than one feature although the chance of a feature containing a typo is lower.</p>
+<p>In either case, this customer is clearly not a respresentative sample of the dataset, and I therefore choose the remove this point as its values may cludder up the process (see answer below). We can use the same argument for removing the data points which are extreme for more than one feature although the chance of a feature containing a typo is lower.</p>
 
 </div>
 </div>
@@ -20418,7 +20418,7 @@ Name: 154, dtype: int64</pre>
 <p><strong>Answer:</strong></p>
 <ul>
 <li>Does outliners belonging to more than one feature exist: Yes (see above)</li>
-<li>Should these data points be removed: For the sake of improving the machine learning algorithms they should. Data points which are outliers for more than one feature could arise from typing errors etc., but they are anyways not representaive for the bulk of the data data.</li>
+<li>Should these data points be removed: For the sake of improving the machine learning algorithms they should, at least for non-robust PCA which is based on "ordniary" correlation. Data points which are outliers for more than one feature could arise from typing errors etc., but they are anyways not representaive for the bulk of the data data.</li>
 <li>By this argument: Data points which are outliers to more than one feature has been added to the <code>outliers</code> list.</li>
 </ul>
 
@@ -22298,11 +22298,13 @@ TkSuQmCC
 <li>Disatvantages:<ul>
 <li>When one has too few points per cluster artificial regularization of the covariances is needed.</li>
 <li>Will always use all the components (held-out data or information theoretical criteria) in the absence of external cues.</li>
+<li>It can fail to work if the dimensionality of the problem is too high</li>
 </ul>
 </li>
 <li>Sources:<ul>
 <li><a href="http://scikit-learn.org/stable/modules/mixture.html#mixture">http://scikit-learn.org/stable/modules/mixture.html#mixture</a></li>
 <li><a href="https://sandipanweb.wordpress.com/2017/03/19/hard-soft-clustering-with-k-means-weighted-k-means-and-gmm-em/">https://sandipanweb.wordpress.com/2017/03/19/hard-soft-clustering-with-k-means-weighted-k-means-and-gmm-em/</a></li>
+<li><a href="http://www.nickgillian.com/wiki/pmwiki.php/GRT/GMMClassifier">http://www.nickgillian.com/wiki/pmwiki.php/GRT/GMMClassifier</a></li>
 </ul>
 </li>
 </ul>
@@ -22313,12 +22315,13 @@ TkSuQmCC
 </ul>
 </li>
 <li>Why:<ul>
-<li>After doing the normalization the data became approximately Gaussian, meaning the there are good premises for using GMM</li>
+<li>After doing the normalization the data became approximately Gaussian, meaning the there are good premises for using GMM.</li>
 <li>Looking at the points in for example <code>Detergents_Paper</code> we can see that the datas in this dimension is elongated, meaning that the K-means clustering algorithm could get into trouble.</li>
 <li>It could be that the soft clustering could be appropriate to the boarder cases, and in the case that the data contains some noise.</li>
 </ul>
 </li>
 </ul>
+<p>The practical consideration to do when consideing soft vs. hard clustering is usually the speed vs. the second order information gained from the confidence levels.</p>
 
 </div>
 </div>
@@ -22367,7 +22370,11 @@ TkSuQmCC
     <span class="n">sample_preds</span> <span class="o">=</span> <span class="n">clusterer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">pca_samples</span><span class="p">)</span>
 
     <span class="c1"># Calculate the mean silhouette coefficient for the number of clusters chosen</span>
-    <span class="n">score</span> <span class="o">=</span> <span class="n">silhouette_score</span><span class="p">(</span><span class="n">reduced_data</span><span class="p">,</span> <span class="n">preds</span><span class="p">)</span>
+    <span class="c1"># NOTE:  The Silhouette Coefficient is calculated using the mean intra-cluster distance and the mean </span>
+    <span class="c1">#        nearest-cluster distance for each sample. Therefore, it makes sense to use the same distance </span>
+    <span class="c1">#        metric here as the one used in the clustering algorithm.</span>
+    <span class="c1">#        - Quote from the first reviewer</span>
+    <span class="n">score</span> <span class="o">=</span> <span class="n">silhouette_score</span><span class="p">(</span><span class="n">reduced_data</span><span class="p">,</span> <span class="n">preds</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="s2">&quot;mahalanobis&quot;</span><span class="p">)</span>
     
     <span class="k">return</span> <span class="n">score</span><span class="p">,</span> <span class="n">preds</span><span class="p">,</span> <span class="n">centers</span><span class="p">,</span> <span class="n">sample_preds</span>
 </pre></div>
@@ -23819,8 +23826,13 @@ Sample point 2 predicted to be in Cluster 0
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p><strong>Answer:</strong></p>
-<p>My guess is (given that I've correctly identified the clusters), that customers which consumes less has less physical space. If that is the case, I would guess that a constant supply would be needed in order not to run out of goods. Shipments $3$ days a week could potentially harm these businesses.</p>
-<p>Furthermore: Large supermarkets could have a large storage spaces. In that respect It would make sense to send large shipments as these customers are not basing their business on <code>Fresh</code>. The large supermarkets could therefore be affected positively by a shipment $3$ days a week.</p>
+<p>The wholesale distributor can use the customers to run A/B tests in order to see how the different group responds to the change. The crux of the test is to:</p>
+<blockquote><p>Perform the test on small samples from the population (just large enough to get statistically significant results) while at the same time ensure that the experiment group (A) is highly similar to the control group (B).</p>
+</blockquote>
+<p>This is one way of doing a two-sample hypothesis testing, and the sample size and significance level $\alpha$ (probability of rejecting the null hypothesis given that it is true) should be set prior to the test.</p>
+<p>Given that we have segmented the customers in two groups, it is important that group A and group B belong to the same cluster for the test. In other words, the wholesale distributor should run two A/B tests: One for segment <code>0</code>, and one for segment <code>1</code> as they may respond differently to the change.</p>
+<p>For example, given that we have correctly identified the clusters above, it could be that customers which consumes less has less physical space. If that is the case, it could be that a constant supply would be needed in order not to run out of goods. Shipments $3$ days a week could potentially harm these businesses. Furthermore: Large supermarkets could have a large storage spaces. In that respect it could make sense to send large shipments as these customers are not basing their business on <code>Fresh</code>. The large supermarkets could therefore be affected positively by a shipment $3$ days a week.</p>
+<p>In any case, our hope is then that we have clustered correctly. If it turns out that we have messed up the clustering, and that group A and B actually are dissimilar to each other, then the result of the A/B test might be due to some variable other than the variable being tested.</p>
 
 </div>
 </div>
